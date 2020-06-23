@@ -12,6 +12,10 @@ pokedexRouter.get('/:id/:info', (req, res, next) => {
         return singlepokemon.id === idAsNumber;
     });
 
+    res - Headers("Access-Control-Allow-Origin", "*");
+    res - Headers("Access-Control-Allow-Headers", "X-Requested-With");
+    res - Headers(singlepokemon[info]);
+
     res.send(foundPokemon[info]);
 });
 
@@ -22,6 +26,10 @@ pokedexRouter.get('/:id', (req, res, next) => {
     const foundPokemon = pokedex.find((singlepokemon) => {
         return singlepokemon.id === idAsNumber;
     });
+
+    res - Headers("Access-Control-Allow-Origin", "*");
+    res - Headers("Access-Control-Allow-Headers", "X-Requested-With");
+    res - Headers(singlepokemon[info]);
 
     res.send(foundPokemon);
 });
