@@ -12,7 +12,7 @@ pokedexRouter.get('/:id/:info', (req, res, next) => {
         return singlepokemon.id === idAsNumber;
     });
 
-    res - Headers("Access-Control-Allow-Origin", "*");
+    res - Headers("Access-Control-Allow-Origin", "localhost:3000");
     res - Headers("Access-Control-Allow-Headers", "X-Requested-With");
     res - Headers(singlepokemon[info]);
 
@@ -27,9 +27,6 @@ pokedexRouter.get('/:id', (req, res, next) => {
         return singlepokemon.id === idAsNumber;
     });
 
-    res - Headers("Access-Control-Allow-Origin", "*");
-    res - Headers("Access-Control-Allow-Headers", "X-Requested-With");
-    res - Headers(singlepokemon[info]);
 
     res.send(foundPokemon);
 });
