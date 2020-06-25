@@ -1,39 +1,41 @@
 var express = require('express');
 const pokedex = require('./pokedex.json');
 
+var router = express.Router();
 
-const pokedexRouter = express.Router();
-
-pokedexRouter.get('/:id/:info', (req, res, next) => {
+/* GET pokemon list */
+router.get('/:id/:info', function (req, res, next) {
     const { id, info } = req.params;
     const idAsNumber = parseInt(id, 10);
 
-    const foundPokemon = pokedex.find((singlepokemon) => {
-        return singlepokemon.id === idAsNumber;
-    });
+    if (!isNaN(idAsNumber)) {
+        const foundPokemon = pokedex.find((singlePokemon) => {
+            return singlePokemon.id === idAsNumber;
+        });
 
-    res - Headers("Access-Control-Allow-Origin", "localhost:3000");
-    res - Headers("Access-Control-Allow-Headers", "X-Requested-With");
-    res - Headers(singlepokemon[info]);
-
-    res.send(foundPokemon[info]);
+        res.send(foundPokemon[info]);
+    } else {
+        res.status(500).send('Error, wrong id type');
+    }
 });
 
-pokedexRouter.get('/:id', (req, res, next) => {
+router.get('/:id', function (req, res, next) {
     const { id } = req.params;
     const idAsNumber = parseInt(id, 10);
 
-    const foundPokemon = pokedex.find((singlepokemon) => {
-        return singlepokemon.id === idAsNumber;
-    });
+    if (!isNaN(idAsNumber)) {
+        const foundPokemon = pokedex.find((singlePokemon) => {
+            return singlePokemon.id === idAsNumber;
+        });
 
-
-    res.send(foundPokemon);
+        res.send(foundPokemon);
+    } else {
+        res.status(500).send('Error, wrong id type');
+    }
 });
 
-pokedexRouter.get('/', (req, res, next) => {
-
+router.get('/', function (req, res, next) {
     res.send(pokedex);
 });
 
-module.exports = pokedexRouter;
+module.exports = router;
