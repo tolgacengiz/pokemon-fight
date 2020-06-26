@@ -1,4 +1,17 @@
 const express = require('express');
+const { Pool } = require('pg');
+const md5 = require('md5');
+
+// 	postgres://rdvnbpfq:Rg_vbAeEbvkpiFnl_QsAMXzwYxa4qvvA@ruby.db.elephantsql.com:5432/rdvnbpfq
+const pool = new Pool({
+    user: 'gwyvplvx',
+    host: 'ruby.db.elephantsql.com',
+    database: 'gwyvplvx',
+    password: 'nhw1Fp4n_XNo5v5IZz9OfQnmag5XWPmS',
+    port: 5432,
+});
+
+
 const router = express.Router();
 
 router.get('/', (req, res) => {
@@ -6,28 +19,41 @@ router.get('/', (req, res) => {
 })
 
 router.post('/', (req, res) => {
-    const dbValues = {
-        username: 'admin',
-        password: '12345'
-    };
+    const { username, password } = req.body;
 
-    const detailedInfoAboutUser = {
-        firstName: 'Tolga',
-        lastName: 'Cengiz',
-        secretToken: 'Secret!!!!!'
-    };
+    pool
+        .query(`SELECT * FROM users WHERE username='${username}';`)
+        .then((data) => {
+            const returnedTable = data.rows; // Array of records
 
-    console.log(req.body)
-    // console.log(req.body.username)
+            if (returnedTable.length === 0) {
+                // This return is to exit from function
+                return res.send({ error: 'No records found' });
+            }
 
-    if (
-        dbValues.password === req.body.password &&
-        dbValues.username === req.body.username
-    ) {
-        res.send(detailedInfoAboutUser);
-    } else {
-        res.send({ error: 'Failed' });
-    }
+            const userFromDb = returnedTable[0];
+
+            const detailedInfoAboutUser = {
+                firstName: userFromDb.first_name,
+                lastName: userFromDb.last_name,
+                secretToken: 'Secret!!!!!'
+            };
+
+            // Building hash for received from request password
+            const salt = 'SOME_SECRET_HERE';
+            const receivedHashedPassword = md5(password + salt);
+
+            const passwordsHashesMatch = userFromDb.password_hash === receivedHashedPassword;
+
+            if (passwordsHashesMatch) {
+                res.send(detailedInfoAboutUser);
+            } else {
+                res.send({ error: 'Failed' });
+            }
+        })
+        .catch(err => {
+            res.send({ error: err.message });
+        });
 });
 
 module.exports = router;
