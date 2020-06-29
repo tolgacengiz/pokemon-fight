@@ -4,13 +4,15 @@ const md5 = require('md5');
 
 // 	postgres://rdvnbpfq:Rg_vbAeEbvkpiFnl_QsAMXzwYxa4qvvA@ruby.db.elephantsql.com:5432/rdvnbpfq
 const pool = new Pool({
-    user: 'gwyvplvx',
+    user: 'rdvnbpfq',
     host: 'ruby.db.elephantsql.com',
-    database: 'gwyvplvx',
-    password: 'nhw1Fp4n_XNo5v5IZz9OfQnmag5XWPmS',
+    database: 'rdvnbpfq',
+    password: 'Rg_vbAeEbvkpiFnl_QsAMXzwYxa4qvvA',
     port: 5432,
+    // connectionString: 'postgres://rdvnbpfq:Rg_vbAeEbvkpiFnl_QsAMXzwYxa4qvvA@ruby.db.elephantsql.com:5432/rdvnbpfq',
 });
 
+pool.connect();
 
 const router = express.Router();
 
@@ -22,31 +24,47 @@ router.post('/', (req, res) => {
     const { username, password } = req.body;
 
     pool
-        .query(`SELECT * FROM users WHERE username='${username}';`)
+        .query(`SELECT * FROM users WHERE username=$1;`, [username])
         .then((data) => {
             const returnedTable = data.rows; // Array of records
 
+            // If user doesn't exist in DB we response with error
             if (returnedTable.length === 0) {
                 // This return is to exit from function
                 return res.send({ error: 'No records found' });
             }
 
-            const userFromDb = returnedTable[0];
-
-            const detailedInfoAboutUser = {
-                firstName: userFromDb.first_name,
-                lastName: userFromDb.last_name,
-                secretToken: 'Secret!!!!!'
-            };
-
+            // And if does:
+            // Checking password hashes
             // Building hash for received from request password
+            const userFromDb = returnedTable[0];
             const salt = 'SOME_SECRET_HERE';
             const receivedHashedPassword = md5(password + salt);
 
             const passwordsHashesMatch = userFromDb.password_hash === receivedHashedPassword;
 
             if (passwordsHashesMatch) {
-                res.send(detailedInfoAboutUser);
+                const tokenPayload = {
+                    firstName: userFromDb.first_name,
+                    lastName: userFromDb.last_name,
+                    username,
+                };
+
+                const secretForToken = 'SECRET_FOR_TOKEN';
+
+                const tokenPayloadAsString = JSON.stringify(tokenPayload); // Convert  payload to JSON string
+
+                // Convert string to base64 encoded string
+                const buff = new Buffer(tokenPayloadAsString); // Create new buffer object
+                const base64Payload = buff.toString('base64'); // Use buffer object to build first part of the token
+
+                // Build signature for payload
+                const signature = md5(base64Payload + secretForToken); // Second part of the token
+
+                // Combine payload and signature to one token
+                const detailedInfoAboutUser = `${base64Payload}.${signature}`;
+
+                res.send({ error: null, token: detailedInfoAboutUser });
             } else {
                 res.send({ error: 'Failed' });
             }
