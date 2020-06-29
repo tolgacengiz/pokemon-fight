@@ -1,17 +1,18 @@
-const path = require('path');
-const express = require('express');
+var path = require('path');
+var express = require('express');
 const cors = require('cors');
 
-const createError = require('http-errors');
-const cookieParser = require('cookie-parser');
-const logger = require('morgan');
+var createError = require('http-errors');
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
 
-const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
-const pokemonRouter = require('./routes/pokemon');
-const loginRouter = require('./routes/login');
+var indexRouter = require('./routes/index');
+var usersRouter = require('./routes/users');
+var pokemonRouter = require('./routes/pokemon');
+var loginRouter = require('./routes/login');
+var newsRouter = require('./routes/news');
 
-const app = express();
+var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -19,7 +20,7 @@ app.set('view engine', 'jade');
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use(cors());
@@ -30,6 +31,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/pokemon', pokemonRouter);
 app.use('/login', loginRouter);
+app.use('/news', newsRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
